@@ -4,10 +4,15 @@
 
 package frc.robot.subsystems;
 
-import com.revrobotics.CANSparkMax;
-import com.revrobotics.SparkPIDController;
-import com.revrobotics.CANSparkBase.IdleMode;
-import com.revrobotics.CANSparkLowLevel.MotorType;
+import com.revrobotics.spark.SparkMax;
+import com.revrobotics.spark.SparkBase.PersistMode;
+import com.revrobotics.spark.SparkBase.ResetMode;
+import com.revrobotics.spark.SparkClosedLoopController;
+import com.revrobotics.spark.config.*;
+import com.revrobotics.spark.config.ClosedLoopConfig.FeedbackSensor;
+import com.revrobotics.spark.config.SparkBaseConfig.IdleMode;
+import com.revrobotics.spark.SparkLowLevel.MotorType;
+
 
 import edu.wpi.first.wpilibj.smartdashboard.SmartDashboard;
 import edu.wpi.first.wpilibj2.command.SubsystemBase;
@@ -16,22 +21,21 @@ import frc.robot.Constants;
 
 public class ShooterFeederSubsystem extends SubsystemBase {
   	
-	CANSparkMax shooterFeederMotor;
-	SparkPIDController shooterFeederController;
+	SparkMax shooterFeederMotor;
+	SparkClosedLoopController shooterFeederController;
+  SparkMaxConfig shooterFeederConfig;
+
 
 	public ShooterFeederSubsystem() {
-		shooterFeederMotor = new CANSparkMax(Constants.ShooterFeeder.ShooterFeederMotorID, MotorType.kBrushless);
-    shooterFeederMotor.restoreFactoryDefaults();
-    shooterFeederController = shooterFeederMotor.getPIDController();
-    shooterFeederController.setP(Constants.ShooterFeeder.ShooterFeeder_kP);
-    shooterFeederController.setI(Constants.ShooterFeeder.ShooterFeeder_kI);
-    shooterFeederController.setD(Constants.ShooterFeeder.ShooterFeeder_kD);
-    shooterFeederController.setFF(Constants.ShooterFeeder.ShooterFeeder_kFF);
-    shooterFeederController = shooterFeederMotor.getPIDController();
-    shooterFeederMotor.setIdleMode(IdleMode.kCoast);
-    shooterFeederMotor.setSmartCurrentLimit(25, 40, 1000);
-    shooterFeederMotor.getEncoder().setPositionConversionFactor(1);
-    shooterFeederMotor.burnFlash();
+		shooterFeederMotor = new SparkMax(Constants.ShooterFeeder.ShooterFeederMotorID, MotorType.kBrushless);
+    shooterFeederConfig = new SparkMaxConfig();
+
+    shooterFeederConfig.inverted(false);
+    shooterFeederConfig.idleMode(IdleMode.kCoast);
+    shooterFeederConfig.encoder.positionConversionFactor(1);
+    shooterFeederConfig.encoder.velocityConversionFactor(1);
+    shooterFeederConfig.closedLoop.feedbackSensor(FeedbackSensor.kNoSensor);
+    shooterFeederConfig.closedLoop.pid(Constants.ShooterFeeder.ShooterFeeder_kP, Constants.ShooterFeeder.ShooterFeeder_kI, Constants.ShooterFeeder.ShooterFeeder_kD);
 	}
 
 	public void FeedingShooter(double shooterFeederSpeed){
@@ -43,7 +47,7 @@ public class ShooterFeederSubsystem extends SubsystemBase {
 		SmartDashboard.putNumber("ShooterFeeder Speed", shooterFeederSpeed);
 	}
     public void setShooterFeederVelocity(double shooterFeederVelocity) {
-       shooterFeederController.setReference(shooterFeederVelocity, CANSparkMax.ControlType.kVelocity);
+       shooterFeederController.setReference(shooterFeederVelocity, SparkMax.ControlType.kVelocity);
   }
 
   

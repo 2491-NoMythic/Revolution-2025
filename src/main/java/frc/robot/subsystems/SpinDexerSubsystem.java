@@ -4,33 +4,39 @@
 
 package frc.robot.subsystems;
 
-import com.revrobotics.CANSparkLowLevel.MotorType;
-import com.revrobotics.CANSparkMax;
-import com.revrobotics.SparkPIDController;
-import com.revrobotics.CANSparkBase.IdleMode;
+import com.revrobotics.spark.SparkMax;
+import com.revrobotics.spark.SparkBase.PersistMode;
+import com.revrobotics.spark.SparkBase.ResetMode;
+
+import java.io.ObjectInputFilter.Config;
+
+import com.revrobotics.spark.SparkClosedLoopController;
+import com.revrobotics.spark.config.*;
+import com.revrobotics.spark.config.ClosedLoopConfig.FeedbackSensor;
+import com.revrobotics.spark.config.SparkBaseConfig.IdleMode;
+import com.revrobotics.spark.SparkLowLevel.MotorType;
 
 import edu.wpi.first.wpilibj.smartdashboard.SmartDashboard;
 import edu.wpi.first.wpilibj2.command.SubsystemBase;
 import frc.robot.Constants;
+import frc.robot.Constants.SpinDexer;
 
 /** Add your docs here. */
 public class SpinDexerSubsystem extends SubsystemBase{
-	CANSparkMax spinDexerMotor;
-	SparkPIDController spinDexerController;
+	SparkMax spinDexerMotor;
+	SparkClosedLoopController spinDexerController;
+	SparkMaxConfig spinDexerConfig;
 
 	public SpinDexerSubsystem() {
-		spinDexerMotor = new CANSparkMax(Constants.SpinDexer.SpindDexerMotorID, MotorType.kBrushless);
-		spinDexerMotor.restoreFactoryDefaults();
-		spinDexerController = spinDexerMotor.getPIDController();
-		spinDexerController.setP(Constants.SpinDexer.SpinDexer_kP);
-		spinDexerController.setI(Constants.SpinDexer.SpinDexer_kI);
-		spinDexerController.setD(Constants.SpinDexer.SpinDexer_kD);
-		spinDexerController.setFF(Constants.SpinDexer.SpinDexer_kFF);
-		spinDexerController = spinDexerMotor.getPIDController();
-		spinDexerMotor.setIdleMode(IdleMode.kCoast);
-		spinDexerMotor.setSmartCurrentLimit(25, 40, 1000);
-		spinDexerMotor.getEncoder().setPositionConversionFactor(1);
-		spinDexerMotor.burnFlash();
+		spinDexerMotor = new SparkMax(Constants.SpinDexer.SpindDexerMotorID, MotorType.kBrushless);
+		spinDexerConfig = new SparkMaxConfig();
+
+		spinDexerConfig.inverted(true);
+		spinDexerConfig.idleMode(IdleMode.kCoast);
+		spinDexerConfig.encoder.positionConversionFactor(1);
+		spinDexerConfig.encoder.velocityConversionFactor(1);
+		spinDexerConfig.closedLoop.feedbackSensor(FeedbackSensor.kNoSensor);
+		spinDexerConfig.closedLoop.pid(Constants.SpinDexer.SpinDexer_kP, Constants.SpinDexer.SpinDexer_kI, Constants.SpinDexer.SpinDexer_kD);
 	}
 
 	public void rotateClockWise(double spinDexerSpeed) {
@@ -47,7 +53,7 @@ public class SpinDexerSubsystem extends SubsystemBase{
 		spinDexerMotor.set(0);
 	}
 	public void setSpinDexerVelocity(double spinDexerVelocity) {
-		spinDexerController.setReference(spinDexerVelocity, CANSparkMax.ControlType.kVelocity);
+		spinDexerController.setReference(spinDexerVelocity, SparkMax.ControlType.kVelocity);
 	  }
 	@Override
 	public void periodic() {
